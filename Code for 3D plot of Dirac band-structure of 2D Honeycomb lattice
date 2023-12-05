@@ -1,0 +1,44 @@
+"""
+Created on Mon Nov 13 00:36:07 2023
+
+@author: Rishi P. Joshi
+"""
+import matplotlib
+from matplotlib import pyplot
+import numpy as np
+import kwant
+
+
+def momentum_to_lattice(k):
+    graphene = kwant.lattice.honeycomb(a=1, name='')
+    B = np.array(graphene.prim_vecs).T
+    A = B.dot(np.linalg.inv(B.T.dot(B)))
+    return np.linalg.solve(A, k)
+
+
+def dispersion_2D(syst, params=None, lim=1.5*np.pi, num_points=200):
+    """A simple plot of 2D band structure."""
+    if params is None:
+        params = []
+        momenta = np.linspace(-lim, lim, num_points)
+    energies = []
+    for kx in momenta:
+        for ky in momenta:
+            lattice_k = momentum_to_lattice([kx, ky])
+            h = syst.hamiltonian_submatrix(args=(list(params) + list(lattice_k)))
+            energies.append(np.linalg.eigvalsh(h))
+    energies = np.array(energies).reshape(num_points, num_points, -1)
+    emin, emax = np.min(energies), np.max(energies)
+    kx, ky = np.meshgrid(momenta, momenta)
+    fig = pyplot.figure()
+    axes = fig.add_subplot(1, 1, 1, projection='3d')
+    for band in range(energies.shape[-1]):
+        axes.plot_surface(ky, kx, energies[:, :,band], cstride=2, rstride=2, cmap=matplotlib.cm.RdBu_r, vmin=emin, vmax=emax,linewidth=0.1)
+  
+ 
+
+graphene = kwant.lattice.honeycomb(a=1, name='')
+bulk_graphene = kwant.Builder(kwant.TranslationalSymmetry(*graphene.prim_vecs))
+bulk_graphene[graphene.shape((lambda pos: True), (0, 0))] = 0
+bulk_graphene[graphene.neighbors(1)] = 1
+dispersion_2D(kwant.wraparound.wraparound(bulk_graphene).finalized())
