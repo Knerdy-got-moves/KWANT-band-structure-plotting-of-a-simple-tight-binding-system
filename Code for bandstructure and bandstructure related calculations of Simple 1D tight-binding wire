@@ -1,1 +1,64 @@
+import kwant
+import numpy as np
+# For plotting.
+from matplotlib import pyplot
 
+def make_lead(a=1, t=1.0, W=10):
+    # Start with an empty lead with a single square lattice
+    lat = kwant.lattice.square(a)
+
+    sym_lead = kwant.TranslationalSymmetry((-a, 0))
+    lead = kwant.Builder(sym_lead)
+
+    # build up one unit cell of the lead, and add the hoppings
+    # to the next unit cell
+    for j in range(W):
+        lead[lat(0, j)] = 4 * t
+
+        if j > 0:
+            lead[lat(0, j), lat(0, j - 1)] = -t
+
+        lead[lat(1, j), lat(0, j)] = -t
+
+    return lead
+def Diff2Energy(bands,x,h):#plotting effective mass for one of the bands
+  cd = 4*(bands(x+h/2)[0]+bands(x-h/2)[0]-2*bands(x)[0])/h**2
+  return cd
+
+
+def plot_effectivemass(flead, momenta):
+    h=0.01
+    bands = kwant.physics.Bands(flead)
+    mef=[1/(Diff2Energy(bands,k,h)) for k in momenta]
+    pyplot.plot(momenta, mef)
+    pyplot.xlabel("momentum[(lattice constant)^-1]")
+    pyplot.ylabel("Effective mass")
+    pyplot.show()
+
+def simple_dos_example(flead):
+    spectrum = kwant.kpm.SpectralDensity(flead)
+    energies, densities = spectrum()
+    plot_dos([('densities', (energies, densities)),])
+
+def plot_dos(labels_to_data):
+    for label, (x, y) in labels_to_data:
+        pyplot.plot(x, y, label=label, linewidth=2, color="orange")
+    pyplot.legend(loc=2, framealpha=0.5)
+    pyplot.xlabel("energy [t]")
+    pyplot.ylabel("DoS [a.u.]")
+    pyplot.show()
+    pyplot.clf()
+
+def main():
+    lead = make_lead().finalized()
+    kwant.plotter.bands(lead, show=False)
+    pyplot.xlabel("momentum [(lattice constant)^-1]")
+    pyplot.ylabel("energy [t]")
+    pyplot.show()
+    momenta = [-np.pi + 0.02 * np.pi * i for i in range(101)]
+    plot_effectivemass(lead, momenta)
+    simple_dos_example(lead)
+# Call the main function if the script gets executed (as opposed to imported).
+# See <http://docs.python.org/library/__main__.html>.
+if __name__ == '__main__':
+    main()
