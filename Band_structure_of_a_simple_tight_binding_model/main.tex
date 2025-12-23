@@ -1,0 +1,493 @@
+\documentclass[DIV=calc, paper=a4, fontsize=11pt, twocolumn]{scrartcl}	 % A4 paper and 11pt font size
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage[protrusion=true,expansion=true]{microtype} % Better typography
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+\usepackage[svgnames]{xcolor} % Enabling colors by their 'svgnames'
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{fix-cm}	 % Custom font sizes - used for the initial letter in the document
+\usepackage{graphicx} % Package to insert images
+\usepackage[colorlinks,bookmarks=true,citecolor=blue,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage{sectsty} % Enables custom section titles
+\allsectionsfont{\usefont{OT1}{phv}{b}{n}} % Change the font of all section commands
+
+\usepackage{fancyhdr} % Needed to define custom headers/footers
+\pagestyle{fancy} % Enables the custom headers/footers
+\usepackage{lastpage} % Used to determine the number of pages in the document (for "Page X of Total")
+
+% Headers - all currently empty
+\lhead{Rishi Paresh Joshi 2111093}
+\chead{}
+\rhead{2023}
+
+% Footers
+%\lfoot{\footnotesize Instructor: } % Instructor's Name
+%\cfoot{\footnotesize TA: } % TA's Name
+\rfoot{\footnotesize Page \thepage\ of \pageref{LastPage}} % Format for Footnote: Page 1 of 2
+
+\renewcommand{\headrulewidth}{0.0pt} % No header rule
+\renewcommand{\footrulewidth}{0.4pt} % Thin footer rule
+
+\usepackage{lettrine} % Package to accentuate the first letter of the text
+\newcommand{\initial}[1]{ % Defines the command and style for the first letter
+\lettrine[lines=3,lhang=0.3,nindent=0em]{
+\color{DarkGoldenrod}
+{\textsf{#1}}}{}}
+\usepackage{tcolorbox}
+\tcbuselibrary{minted,breakable,xparse,skins}
+
+\definecolor{bg}{gray}{0.95}
+\DeclareTCBListing{mintedbox}{O{}m!O{}}{%
+  breakable=true,
+  listing engine=minted,
+  listing only,
+  minted language=#2,
+  minted style=default,
+  minted options={%
+    linenos,
+    gobble=0,
+    breaklines=true,
+    breakafter=,,
+    fontsize=\small,
+    numbersep=8pt,
+    #1},
+  boxsep=0pt,
+  left skip=0pt,
+  right skip=0pt,
+  left=25pt,
+  right=0pt,
+  top=3pt,
+  bottom=3pt,
+  arc=5pt,
+  leftrule=0pt,
+  rightrule=0pt,
+  bottomrule=2pt,
+  toprule=2pt,
+  colback=bg,
+  colframe=orange!70,
+  enhanced,
+  overlay={%
+    \begin{tcbclipinterior}
+    \fill[orange!20!white] (frame.south west) rectangle ([xshift=20pt]frame.north west);
+    \end{tcbclipinterior}},
+  #3}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\usepackage{titling} % Allows custom title configuration
+
+\newcommand{\HorRule}{\color{DarkGoldenrod} \rule{\linewidth}{1pt}} % Defines the gold horizontal rule around the title
+
+\pretitle{\vspace{-30pt} \begin{flushleft} \HorRule \fontsize{50}{50} \usefont{OT1}{phv}{b}{n} \color{DarkRed} \selectfont} % Horizontal rule before the title
+
+% Lab Report Title Goes Here
+\title{Band structure of a simple tight-binding model} 
+% Lab Report Title Goes Here
+
+\posttitle{\par\end{flushleft}\vskip 0.5em} % Whitespace under the title
+
+\preauthor{\begin{flushleft}\large \lineskip 0.5em \usefont{OT1}{phv}{m}{sl} \color{Black}} % Author font configuration
+
+% Student's name(s)
+\author{Rishi Paresh Joshi, } 
+% Student's name(s)
+
+% Student's Institution
+\postauthor{\footnotesize \lineskip 0.5em \usefont{OT1}{phv}{m}{sl} \color{Black} % Configuration for the institution name
+National Institute of Science Education and Research, Bhubaneswar\\ 
+% Student's institution
+
+\par\end{flushleft}\HorRule} % Horizontal rule after the title
+
+\date{} % Add a date here if you would like one to appear underneath the title block
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle % Print the title
+
+\thispagestyle{empty} % Enabling the custom headers/footers for the second page forward
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+% The first character should be within \initial{}
+\initial{T}\textbf{ight-binding models play a pivotal role in our understanding of condensed matter physics, providing a powerful framework for describing the electronic structure of materials at the quantum level. These models are particularly significant due to their ability to capture the intricate interplay of electrons in solids, elucidating fundamental phenomena that underlie the properties of a wide range of materials. For example, tight-binding systems are used as a model where topological order arises, like in the famous Haldane model that describes the Anomalous Quantum Hall Effect(AQHE)\cite{HM} in the honeycomb lattice of graphene or the SSH model describing the electrical conductance of polyacetylene\cite{SSH}. At the heart of tight-binding models is electron hopping between adjacent atomic orbitals, reflecting the quantum mechanical nature of electrons and their interactions within a crystalline lattice. This enables the modeling of electronic properties with remarkable accuracy, making tight-binding models an indispensable tool for researchers in materials science and condensed matter physics. The report contains analytical and numerical derivations for band structure and related calculations of tight-binding lattices primarily used in condensed matter. The lattices under consideration in this report are 1-dimensional (1D) simple wire and 2-dimensional (2D) Honeycomb lattice. This report displays how easily the Python library $Kwant$ can code for the band structure, effective mass, and density of states for both these lattices (DOS). $Kwant$ is a software package designed for simulating quantum transport in various mesoscopic systems, including quantum wires, dots, topological insulators, graphene, quantum Hall systems, and superconducting structures. It provides a flexible and efficient platform for investigating these systems' electronic and transport properties, aiding researchers in gaining insights into the quantum behavior of materials at the nanoscale\cite{KW}. This report can be subdivided into the band structure of a simple wire, as done in \cite{KT}. Further, calculations for effective mass and DOS for simple wire are presented here. Similarly, the entire Honeycomb lattice coding was done and presented here. We used the linear combination of atomic orbitals (LCAO) principle to explain tight-binding in a simple 1D wire\cite{OS}. We also gain a theoretical understanding of the tight-binding Hamiltonian for the 2D Honeycomb lattice\cite{SD}\cite{HL}.}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+\section*{Aim: Band structure of a simple tight-binding wire}
+In this section, we present the theoretical derivation for the band structure of a simple tight-binding wire. To explain tight-binding, we can first consider the principle of LCAO. In the subsequent paragraph, we explain LCAO, taking the example of a diatomic molecule and then generalizing the principle to a lattice of atoms.
+\subsection{LCAO for a diatomic molecule}
+Consider two atoms next to each other, forming a diatomic molecule. The Hamiltonian describing the energy of an electron on the molecule is
+
+$$
+\hat{H}=\hat{V}_{1}+\hat{V}_{2}+\hat{K}
+$$
+
+with $\hat{V}_{1}$ the potential energy due to the first nucleus, $\hat{V}_{2}$ due to the second nucleus, and $\hat{K}$ the kinetic energy of the electron.
+
+Since the different orbitals of an atom are separated in energy, we consider only one orbital per atom (even though this is often a bad starting point and it should only work for $s$-orbitals).
+
+Additionally, we assume that the atoms are sufficiently far apart, such that the shape of the orbitals barely changes due to the presence of the other atom.
+
+If the atoms are far apart from each other such that they do not interact, the eigenstates of the electrons are the atomic orbitals. If we call the atomic orbital of the electron on the first atom $|1\rangle$ and that of the electron on the second atom $|2\rangle$, we have:
+
+$$
+\begin{aligned}
+\left(\hat{V}_{1}+\hat{K}\right)|1\rangle & =\varepsilon_{0}|1\rangle \\
+\left(\hat{V}_{2}+\hat{K}\right)|2\rangle & =\varepsilon_{0}|2\rangle
+\end{aligned}
+$$
+
+Key idea: to find the wavefunction of the electron on the molecule - the molecular orbital -, we search for a solution that is a linear combination of the atomic orbitals (LCAO):
+
+\begin{equation}\label{LCAO}
+|\psi\rangle=\phi_{1}|1\rangle+\phi_{2}|2\rangle \text {. }   
+\end{equation}
+
+
+where $\phi_{1}$ and $\phi_{2}$ are probability amplitudes. The orbital $|\psi\rangle$ is called a molecular orbital because it describes the eigenstate of an electron on the diatomic molecule.
+
+For simplicity, we assume that the atomic orbitals are orthogonal ${ }^{1}$, i.e. $\langle 1 \mid 2\rangle=0$. This orthogonality ensures that $|\psi\rangle$ is normalized whenever $\left|\phi_{1}\right|^{2}+\left|\phi_{2}\right|^{2}=1$.
+
+To find the possible values of $\phi_{1}$ and $\phi_{2}$ and the associated eigenenergies of the molecular orbitals, we apply the full Hamiltonian to $|\psi\rangle$ :
+
+$$
+H|\psi\rangle=E|\psi\rangle=\phi_{1} H|1\rangle+\phi_{2} H|2\rangle
+$$
+
+Taking the left inner product with $\langle 1|$, we obtain
+
+$$
+\langle 1|E| \psi\rangle=\phi_{1}\langle 1|\hat{H}| 1\rangle+\phi_{2}\langle 1|\hat{H}| 2\rangle=E \phi_{1}
+$$
+
+Similarly, taking the inner product with $\langle 2|$ yields:
+
+$$
+E \phi_{2}=\phi_{1}\langle 2|\hat{H}| 1\rangle+\phi_{2}\langle 2|\hat{H}| 2\rangle .
+$$
+
+We combine these two equations into an eigenvalue problem:
+
+\begin{equation}
+\label{Eigenvalue problem}
+E\left(\begin{array}{c}
+\phi_{1} \\
+\phi_{2}
+\end{array}\right)=\left(\begin{array}{cc}
+\langle 1|\hat{H}| 1\rangle & \langle 1|\hat{H}| 2\rangle \\
+\langle 2|\hat{H}| 1\rangle & \langle 2|\hat{H}| 2\rangle
+\end{array}\right)\left(\begin{array}{c}
+\phi_{1} \\
+\phi_{2}
+\end{array}\right)
+\end{equation}
+
+The eigenvalue problem depends on only two parameters: the onsite energy $\langle 1|\hat{H}| 1\rangle=\langle 2|\hat{H}| 2\rangle \equiv E_{0}$ that gives the energy of an electron occupying either of the atomic orbitals and the hopping integral (or just hopping) $\langle 1|\hat{H}| 2\rangle \equiv-t$ that characterizes the energy associated with the electron moving between the two orbitals.
+
+First, let us examine what constitutes the onsite energy and the hopping:
+
+$$
+E_{0}=\langle 1|\hat{H}| 1\rangle=\left\langle 1\left|\hat{V}_{1}+\hat{V}_{2}+\hat{K}\right| 1\right\rangle=\varepsilon_{0}+\left\langle 1\left|\hat{V}_{2}\right| 1\right\rangle
+$$
+
+where we used that $\left(\hat{V}_{1}+\hat{K}\right)|1\rangle=\varepsilon_{0}|1\rangle$. In other words, the onsite energy is the combination of the energy of the original orbital plus the energy shift $\left\langle 1\left|\hat{V}_{2}\right| 1\right\rangle$ of the electron due to the potential of the neighboring atom. Second, the hopping is given by:
+
+$$
+t=-\langle 1|\hat{H}| 2\rangle=-\left\langle 1\left|\hat{V}_{1}+\hat{V}_{2}+\hat{K}\right| 2\right\rangle=-\left\langle 1\left|\hat{V}_{1}\right| 2\right\rangle
+$$
+
+The orbitals $|n\rangle$ are purely real because we consider bound state solutions of the Schrödinger equation. Hence $t$ is real as well.
+
+The eigenvalue problem we obtained describes a particle with a discrete $2 \times 2$ Hamiltonian:
+
+$$
+H=\left(\begin{array}{cc}
+E_{0} & -t \\
+-t & E_{0}
+\end{array}\right)
+$$
+
+Diagonalizing this LCAO Hamiltonian yields the following two eigenvalues:
+
+$$
+E_{ \pm}=E_{0} \mp t
+$$
+
+In the case of a lattice, we can use the Bloch theorem to represent the lattice wave function.
+\subsection{Bloch theorem}
+For electrons in a perfect crystal, there is a basis of wave functions with the following two properties\cite{BT}:
+\begin{itemize}
+    \item  each of these wave functions is an energy eigenstate,
+    \item each of these wave functions is a Bloch state, meaning that this wave function $\psi$ can be written in the form
+    \begin{equation}\label{Bloch wavefunction}
+    \psi(\mathbf{r})=e^{i \mathbf{k} \cdot \mathbf{r}} u(\mathbf{r})    
+    \end{equation}
+\end{itemize}
+where $u(\mathbf{r})$ has the same periodicity as the atomic structure of the crystal, such that:-
+\begin{equation}
+   u_{\mathbf{k}}(\mathbf{x})=u_{\mathbf{k}}(\mathbf{x}+\mathbf{n} \cdot \mathbf{a}) 
+\end{equation}
+
+The defining property of a crystal is translational symmetry, which means that if the crystal is shifted an appropriate amount, it winds up with all its atoms in the same places. (A finite-size crystal cannot have perfect translational symmetry, but it is a valid approximation.)
+
+A three-dimensional crystal has three primitive lattice vectors $\mathbf{a}_{1}, \mathbf{a}_{2}, \mathbf{a}_{3}$. If the crystal is shifted by any of these three vectors or a combination of them of the form 
+\begin{equation}
+n_{1} \mathbf{a}_{1}+n_{2} \mathbf{a}_{2}+n_{3} \mathbf{a}_{3},    
+\end{equation}
+Where $n_{i}$ are three integers, the atoms end up in the exact locations as they started. These are three vectors $\mathbf{b}_{1}, \mathbf{b}_{2}, \mathbf{b}_{3}$ (with units of inverse length), with the property that $\mathbf{a}_{i} \cdot \mathbf{b}_{i}=2 \pi$, but $\mathbf{a}_{i} \cdot \mathbf{b}_{j}=0$ when $i \neq j$.
+\subsection{Calculation of the band structure of a 1D wire\label{cal BS}}
+Similarly to the diatomic system case~\eqref{LCAO}, we formulate the molecular orbital via the LCAO model:
+
+$$
+|\Psi\rangle=\sum_{n} \phi_{n}|n\rangle
+$$
+
+We assume only nearest-neighbor hopping $-t$ and an on-site energy $E_{0}$. The coupled Schrödinger equation of the $|n\rangle$ orbital is (the steps are just like in the diatomic case ~\eqref{Eigenvalue problem}:
+\begin{equation}\label{Coupled eqn}
+E \phi_{n}=E_{0} \phi_{n}-t \phi_{n+1}-t \phi_{n-1} \text {. }
+\end{equation}
+
+Again, the periodic boundary conditions imply $\phi_{N}=\phi_{0}$. The $\phi_{N}$ are the Bloch wavefunctions~\eqref{Bloch wavefunction}
+On substituting the Bloch wavefunctions into the equations of motion:
+
+$$
+LHS=
+E u_{\mathbf{k}} e^{i E t / \hbar-i k n a}$$
+$$
+=E_{0} u_{\mathbf{k}} e^{i E t / \hbar-i k n a}-t u_{\mathbf{k}} e^{i E t / \hbar-i k(n+1) a}-t u_{\mathbf{k}} e^{i E t / \hbar-i k(n-1) a},
+$$
+
+Again, we are not interested in a trivial solution hence we assume $u_{\mathbf{k}} \neq 0$ and thus,
+
+$$
+E=E_{0}-t e^{-i k a}-t e^{i k a}=E_{0}-2 t \cos (k a)
+$$
+\subsubsection{Plotting the dispersion relation using kwant\label{DisRelKwant}}
+\begin{enumerate}
+    \item Define the System: Use Kwant to define the tight-binding system, specifying the lattice, hopping parameters, and other relevant details.
+    \item Set Up the Momentum Path: Create a path in momentum space along which you want to calculate the band structure. This often involves defining a sequence of high-symmetry points in the Brillouin zone.
+    \item Calculate the Band Structure: Utilize Kwant's kwant.physics.Bands module to calculate the band structure along the specified momentum path.
+    \item Extract Momenta and Energies: Retrieve the calculated momenta and corresponding energies from the band structure calculation.
+    \item Plot the Band Structure: Using a plotting library (e.g., matplotlib), visualize the band structure. A simple line plot is employed, where the x-axis represents momenta and the y-axis represents energies (code~\ref{Simple wire}).
+\end{enumerate}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{simple BS tight binding wire.png}
+    \caption{Band structure of a simple tight-binding wire using Kwant~\ref{Simple wire}.}
+    \label{fig-BS Simple wire}
+\end{figure}
+Thus, from sections \ref{cal BS} and \ref{DisRelKwant}, we have learned how to find the dispersion relation; now, we can use it for many other applications, as done below. 
+%------------------------------------------------
+
+\section*{What more can be done in addition to plotting the band structure of a simple tight-binding model?}
+\subsection{Calculation of effective mass of 1D tight-binding wire}
+Consider an electric field $\mathcal{E}$ in the x direction; we want to know what happens is the trajectory of the electrons in this wire. 
+The full Hamiltonian of the system is
+
+$$
+H=\frac{p^{2}}{2 m}+U_{\text {atomic }}(x)+e \mathcal{E} x
+$$
+
+where $U_{\text {atomic }}$ is the potential created by the nuclei, and $\mathcal{E}$ the electric field.
+
+A typical electric field is much smaller than the interatomic potential, and therefore, we can start by obtaining the dispersion relation $E(k)$ without an electric field (by applying the LCAO method ~\ref{LCAO}) and then solve
+
+$$
+H=E(k)+e \mathcal{E} x .
+$$
+
+To derive how particles with an arbitrary dispersion relation move, we recall Hamilton's equations for particle velocity $v$ and force $F$ :
+
+\begin{equation}\label{HamEqns}
+ \begin{aligned}
+v & \equiv \frac{d r}{d t}=\frac{\partial H(p, r)}{\partial p} \\
+F & \equiv \frac{d p}{d t}=-\frac{\partial H(p, r)}{\partial r}
+\end{aligned}   
+\end{equation}
+
+Substituting $p=\hbar k$ into the first equation~\eqref{HamEqns}, we arrive at the expression for the electron group velocity $v \equiv \hbar^{-1} \partial E / \partial k$. From the second equation~\eqref{HamEqns}, we obtain that the force acting on an electron in a band stays $-e \mathcal{E}$, which in turn results in the acceleration.
+
+$$
+\frac{d v}{d t}=\frac{\partial v}{\partial p} \frac{d p}{d t}=F / m
+$$
+
+Comparing this expression with $d v / d t=F / m$, we arrive at the effective mass:
+
+\begin{equation}\label{EffMass}
+m^{*} \equiv\left(\frac{\partial v}{\partial p}\right)^{-1}=\left(\frac{\partial^{2} E}{\partial p^{2}}\right)^{-1}=\hbar^{2}\left(\frac{\partial^{2} E}{\partial k^{2}}\right)^{-1}    
+\end{equation}
+The group velocity describes how quickly electrons with a certain $k$-vector move, while the effective mass describes how hard they are to accelerate by applying an external force; thus, it is inversely proportional to electron mobility and current.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{1D Wire Effective mass .png}
+    \caption{The plot of the effective mass of 1D tight-binding wire vs. k for the lowest energy band~\ref{Simple wire}}
+    \label{Fig.1D effmass}
+\end{figure}
+\subsection{Calculation of 1D tight-binding wire DOS\label{DOS Theory}}
+The DOS is the number of states per unit of energy. In 1D, we have
+
+\begin{equation}\label{DOS Eqn}
+g(E)=\frac{L}{2 \pi} \sum|d k / d E|=\frac{L}{2 \pi \hbar} \sum|v|^{-1}    
+\end{equation}
+
+
+The sum goes over all possible values of $k$ and spin with the same energy $E$. If working in two or more dimensions, we must integrate the values of $k$ with the same energy. Also, note that for energies below $E_{0}-2 t$ or above $E_{0}+2 t$, there are no values of $k$ with that energy, so there is nothing to sum over.
+
+Once again, starting from
+
+$$
+E=E_{0}-2 t \cos (k a)
+$$
+
+we get
+
+$$
+k a= \pm \arccos \left[\left(E-E_{0}\right) / 2 t\right]
+$$
+
+and
+
+$$
+|v|^{-1}=\hbar\left|\frac{d k}{d E}\right|=\frac{\hbar}{a} \frac{1}{\sqrt{4 t^{2}-\left(E-E_{0}\right)^{2}}}
+$$
+
+One can get to this result immediately if you remember the derivative of arccosine. Otherwise, it would help if we went a longer way: compute $d E / d k$ as a function of $k$, express $k$ through $E$ as we did above, and take the inverse.
+
+We now add together the contributions of the positive and the negative momenta as well as both spin orientations, and arrive at the density of states
+
+$$
+g(E)=\frac{L}{2 \pi} \frac{4}{a} \frac{1}{\sqrt{4 t^{2}-\left(E-E_{0}\right)^{2}}}
+$$
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{1D DOS.png}
+    \caption{1D DOS plot, when the energy is close to the bottom of the band, $E=E_{0}-2 t+\delta E$, we get $g(E) \propto \delta E^{-1 / 2}$, as we expect in $1 \mathrm{D}$~\ref{Simple wire}. }
+    \label{Fig. 1D DOS}
+\end{figure}
+We have now seen how the band structure~\ref{fig-BS Simple wire}, effective mass~\ref{Fig.1D effmass} and DOS~\ref{Fig. 1D DOS} look like in 1D. Now, we explore the 2D case with the special Honeycomb lattice.
+%------------------------------------------------
+\subsection{Calculation of the 2D band structure, effective mass and DOS of the Honeycomb lattice }
+The honeycomb lattice, the first model of 2D Dirac materials, has been widely employed in studying fundamental physical scenarios in 2D Dirac materials and beyond. For example, it is a pioneer model for quantum anomalous Hall effects (AQHE) and quantum spin Hall effects (SQHE) in Haldane\cite{HM}.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{HC Lattice.png} 
+    \caption{The circular 2D Honeycomb lattice under consideration~\ref{2D HC plots}}
+    \label{fig:HC Lat}
+\end{figure}
+The conventional honeycomb lattice comprises regular hexagons, forming a profile similar to a "honeycomb,". Each site is threefold and coordinated at an angle of $120^{\circ}$. The honeycomb lattice contains two sublattices, each constituting a 2D hexagonal Bravais lattice. Neglecting the on-site energy difference between the two sublattices (set to zero) and considering only nearest-neighbor hopping $(t)$, the tight-binding spinless Hamiltonian can be written as
+
+$H=-t \sum_{<i, j>}\left(c_{i}^{+} c_{j}+\right.$ h.c. $)$,
+
+where $c_{i}^{+}$and $c_{j}$ are the creation and annihilation operators of an electron in the nearest-neighbors, sites, $i$ and $j$, belonging to different sublattices, respectively.
+
+With Fourier transforms $c_{i}=\sum_{k} \mathrm{e}^{-i k \cdot r_{i}} c_{k}$ and $c_{j}=\sum_{k} \mathrm{e}^{-i k \cdot r_{j}} c_{k}$, the above Hamiltonian is transformed in the following form in momentum space:
+
+$H(k)=\left(\begin{array}{cc}0 & f(k) \\ f^{*}(k) & 0\end{array}\right)$.
+
+In the foregoing, $f(k)=\mathrm{e}^{-i k_{x} a}+\mathrm{e}^{i\left(k_{x} \sqrt{3} / 2-k_{y} / 2\right) a}+\mathrm{e}^{i\left(k_{x} \sqrt{3} / 2+k_{y} / 2\right) a}$, where $a$ represents the distance between two adjacent sites. From this tight-binding Hamiltonian of the honeycomb lattice, two energy-momentum relationships can be obtained:
+
+
+\resizebox{\linewidth}{!}
+{\label{HC Eqn}
+$E_{ \pm}(k)=\pm\sqrt{3+2 \cos \left(\sqrt{3} k_{x} a\right)+4 \cos \left(\frac{1}{2} \sqrt{3} k_{x} a\right) \cos \left(\frac{3}{2} k_{y} a\right)}$}.
+
+Now, we can get effective mass and the DOS like we did for the 1D case using Eq.~\eqref{EffMass} and Section.~\eqref{DOS Theory}.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{HC 3D BSplot.png}
+    \caption{The 3D plot of the band structure of a honeycomb lattice with horizontal axis $k_y$ and vertical axis $k_x$~\ref{3D HC plot}. }
+    \label{fig: HC 3DBS}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{X dirn HC BS.png}
+    \caption{Energy vs. $k_x$~\ref{2D HC plots}}
+    \label{fig:2D x HC BS}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{Y dir HC BS.png}
+    \caption{Energy vs. $k_y$~\ref{2D HC plots}}
+    \label{fig:2D y HC BS}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{Eff Mass HC x.png}
+    \caption{Effective mass vs. $k_x$~\ref{2D HC plots}}
+    \label{fig:2D X HC Eff Mass}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{Eff Mass HC y.png}
+    \caption{Effective mass vs. $k_y$~\ref{2D HC plots}}
+    \label{fig:2D y HC Eff Mass}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{DOS HC .png}
+    \caption{DOS of honeycomb lattice~\ref{2D HC plots}.}
+    \label{fig:2D HC DOS}
+\end{figure}
+
+
+%------------------------------------------------
+\pagebreak
+\section*{Results}
+\begin{itemize}
+    \item We showed the derivation for the band structure of a 1D tight-binding wire Section.~\ref{cal BS}. We showed that the graph obtained Fig.~\ref{fig-BS Simple wire} as given in the Kwant tutorial\cite{KT} is in accordance with the theory.
+    \item We derived the equation for effective mass Eq.~\eqref{EffMass}. It was then coded using a central difference scheme Section.~\ref{Simple wire} and plotted, Fig.~\ref{Fig.1D effmass}.\
+    \item We derived the equation for DOS Eq.~\eqref{DOS Eqn}. It was then coded using a built-in function, Section.~\ref{Simple wire} and plotted, Fig.~\ref{Fig. 1D DOS}.
+    \item We generalized the method to calculate band structure to 2D lattices in a honeycomb lattice Section.~\ref{DisRelKwant}, and we derived the dispersion relation Eq.~\eqref{HC Eqn} and plotted the band structure Fig. ~\ref{fig: HC 3DBS},~\ref{fig:2D x HC BS},~\ref{fig:2D y HC BS}, plotted the effective mass Fig.~\ref{fig:2D X HC Eff Mass},~\ref{fig:2D y HC Eff Mass} and plotted the DOS, Fig.~\ref{fig:2D HC DOS}. The analytical result is that the band gap is 0; numerically, it was $2.9634633505575086\times 10^{-16}$, Section.~\ref{2D HC plots} which is close to 0.
+\end{itemize}
+
+
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+
+\begin{thebibliography}{10} % 10 is a random guess of the total number of references
+\bibitem{HM}
+F.D.M. Haldane,
+\textit{Model for a Quantum Hall Effect without Landau Levels: Condensed-Matter Realization of the "Parity Anomaly"}
+(Phys. Rev. Lett. 61,1988).
+\bibitem{SSH}
+Su, W. P.; Schrieffer, J. R.; Heeger, A. J.,
+\textit{"Solitons in Polyacetylene"}
+(Phys. Rev. Lett. 42 (25): 1698–1701, 1979).
+\bibitem{KW} C. W. Groth, M. Wimmer, A. R. Akhmerov, X. Waintal, \emph{Kwant: a software package for quantum transport}, New J. Phys. 16, 063065 (2014)
+
+\bibitem{KT} Tutorial on Kwant, \emph{\url{https://kwant-project.org/doc/1/},\url{https://github.com/kwant-project}},
+Last visited: Nov.,2023
+
+\bibitem{OS} Open Solid State notes,
+\emph{\url{https://opensolidstate}}, Last visited: Nov.,2023
+
+ 
+ \bibitem{SD} Supriyo Dutta, \emph{"Electronic transport in mesoscopic systems". Tight binding model:(or the method of finite differences)}, Cambridge University Press, 1995. ISBN: 0521416041 
+
+\bibitem{HL} Runyu Fan, Lei Sun, Xiaofei Shao, Yangyang Li, Mingwen Zhao, \emph{"Two-dimensional Dirac materials: Tight-binding lattice models and material candidates"}, ChemPhysMater, Volume 2, Issue 1,2023, Pages 30-42, ISSN 2772-5715, \url{https://doi.org/10.1016/j.chphma.2022.04.009}.
+\bibitem{BT} Bloch's theorem - Wikipedia.,
+\emph{\url{https://en.wikipedia.org/wiki/Bloch's_theorem}}, Last visited: Nov.,2023
+ 
+\end{thebibliography}
+
+%----------------------------------------------------------------------------------------
+
+\newpage 
+
+
+
+
+\end{document}
